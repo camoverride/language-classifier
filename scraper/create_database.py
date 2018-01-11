@@ -66,9 +66,9 @@ class DataBaseWriter(object):
 
     def dbwrite(self, language, sql_database, words):
         """
-        Given a language, this function downloads 25 Wikipedia articles. It then reads those
-        articles and adds words to an "all_articles.dat" file until the number of words is
-        reached. It also leaves behind the articles downloaded as .txt files.
+        Given a language, this function downloads 25 Wikipedia articles. It counts the number of
+        words and adds more articles until the desired number is reached. It also leaves behind
+        the articles downloaded as .txt files.
         """
         # Debug output.
         print('checking ' + language + ' articles')

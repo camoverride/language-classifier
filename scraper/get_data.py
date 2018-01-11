@@ -1,12 +1,13 @@
 """
-This module creates an object that can be used to grab data from Wikipedia. This scraper
-also performs basic document sanitizing, such as removing punctuation, HTML tags, and
-citation brackets. I recommend scraping less than 100 articles per API call.
+This module exposes two objects. The first is GetArticles which can be used to grab data
+from Wikipedia. This scraper also performs basic document sanitizing, such as removing
+punctuation, HTML tags, and citation brackets. I recommend scraping less than 100 articles
+per API call. The second object, Database, creates a SQLite database.
 """
 import re
 import json
 import requests
-from sqlalchemy import Table, Column, Text, String, MetaData, create_engine, exc
+from sqlalchemy import Table, Column, Text, String, MetaData, create_engine
 
 
 class GetArticles(object):
