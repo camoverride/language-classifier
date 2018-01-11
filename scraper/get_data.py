@@ -6,6 +6,7 @@ citation brackets. I recommend scraping less than 100 articles per API call.
 import re
 import json
 import requests
+from sqlalchemy import Table, Column, Text, String, MetaData, create_engine, exc
 
 
 class GetArticles(object):
@@ -65,8 +66,8 @@ class GetArticles(object):
 
             def clean(text):
                 """
-                Sanitizes the document by removing HTML tags, citations, and punctuation. This function
-                can also be expanded to remove headers, footers, side-bar elements, etc.
+                Sanitizes the document by removing HTML tags, citations, and punctuation. This
+                function can also be expanded to remove headers, footers, side-bar elements, etc.
                 """
                 match_tag = re.compile(r'(<[^>]+>|\[\d+\]|[,.\'\"()])')
                 return match_tag.sub('', text)
@@ -86,3 +87,60 @@ class GetArticles(object):
             title = "".join(x for x in title if x.isalnum())
             with open(db_location + '/' + title + '.txt', 'w+') as wikipedia_file:
                 wikipedia_file.write(text)
+
+
+
+class Database(object):
+    """
+    This creates a SQLite database with two tables, "train" and "test." Each table
+    has data from each language. This object has the public method write_categories,
+    which takes as its arguments a language, a training text, and a test text. It
+    writes this information to the proper table.
+    """
+
+    def __init__(self, database_name):
+        # This can easily be exchanged for a different database, like postgres.
+        self.engine = create_engine('sqlite:///' + database_name + '.db')
+        self.metadata = MetaData()
+
+        # Table that contains the training data.
+        self.train = Table('train', self.metadata,
+                           Column('language', String, primary_key=True),
+                           Column('text', Text)
+                          )
+
+        # Table that contains the test data.
+        self.test = Table('test', self.metadata,
+                          Column('language', String, primary_key=True),
+                          Column('text', Text)
+                         )
+
+        self.metadata.create_all(self.engine)
+
+
+    def write_categories(self, language, training_text, test_text):
+        """
+        This method writes the data to the database.
+        """
+        conn = self.engine.connect()
+
+        # Drop rows, data will be overwritten anyway.
+        del1 = self.train.delete().where(self.train.columns.language == language)
+        del2 = self.test.delete().where(self.test.columns.language == language)
+
+        conn.execute(del1)
+        conn.execute(del2)
+
+        ins1 = self.train.insert().values(
+            language=language,
+            text=training_text
+        )
+
+        ins2 = self.test.insert().values(
+            language=language,
+            text=test_text
+        )
+
+        # Execute inserts.
+        conn.execute(ins1)
+        conn.execute(ins2)

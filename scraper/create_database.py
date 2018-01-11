@@ -9,7 +9,7 @@ Trivia: https://www.quora.com/Why-are-there-so-many-articles-in-the-Cebuano-lang
 import subprocess
 from os import listdir
 from os.path import join
-from get_data import GetArticles
+from get_data import GetArticles, Database
 import sys
 sys.path.append('..')
 from languages import LANGUAGES
@@ -63,8 +63,8 @@ class DataBaseWriter(object):
 
         return words
 
-        
-    def dbwrite(self, language, words, exact_words=False):
+
+    def dbwrite(self, language, sql_database, words):
         """
         Given a language, this function downloads 25 Wikipedia articles. It then reads those
         articles and adds words to an "all_articles.dat" file until the number of words is
@@ -82,6 +82,8 @@ class DataBaseWriter(object):
 
         # If there are not enough words downloaded, download more.
         while self._count_words_in_language(language) < words:
+            # Debug output.
+            print('   ... downloading more words, not enough:', self._count_words_in_language(language))
             self.getdata.write_articles(language, 25, language_data_folder)
 
         # Read all the words into a list, removing any extras. Divide into training and test sets.
@@ -90,13 +92,17 @@ class DataBaseWriter(object):
         training_set = all_words[split:]
         test_set = all_words[:split]
 
-        # Write these sets to the SQL database.
-        
+        # Join the words by white-space and add to the SQL database.
+        sql_database.write_categories(language, ' '.join(training_set), ' '.join(test_set))
+
 
 
 if __name__ == "__main__":
 
-    db = DataBaseWriter(DATABASE_LOCATION)
+    SQLDB_NAME = 'language_data'
+    SQLDB = Database(SQLDB_NAME)
+
+    TEXTFILES = DataBaseWriter(DATABASE_LOCATION)
 
     for lang in LANGUAGES:
-        db.dbwrite(lang, WORDS)
+        TEXTFILES.dbwrite(lang, SQLDB, WORDS)
