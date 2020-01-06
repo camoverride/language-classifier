@@ -36,6 +36,7 @@ def index():
     form = LanguageForm()
     if form.validate_on_submit():
         phrase = form.language.data
+        print('>>>>>>', phrase)
         language = identify(form.language.data)
         form.language.data = ''
     return render_template('index.html', form=form, phrase=phrase, language=language)
