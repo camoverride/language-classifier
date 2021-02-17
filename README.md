@@ -34,8 +34,8 @@ Generate a SQLite database:
 `create_database.py`
 
 Explore the data:
-`sqlite3 language_data_1.db`
-`> ###@R@RF#@$F#
+`sqlite3 language_data.db`
+`> SELECT language, title FROM wiki_data LIMIT 25;`
 
 Make a model:
 `cd ../modeling && python3 generate_model.py`

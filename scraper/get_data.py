@@ -1,21 +1,25 @@
 """
-This module exposes two objects. The first is GetArticles which can be used to grab data
-from Wikipedia. This scraper also performs basic document sanitizing, such as removing
-punctuation, HTML tags, and citation brackets. I recommend scraping less than 100 articles
-per API call. The second object, Database, creates a SQLite database.
+This module exposes the class GetWikiArticles which is used to download and sanitize Wikipedia
+articles, downloading them as .txt files to a specified directory. I recommend downloading less
+than 100 articles per language at a time, as Wikipedia's servers might decide to block or limit
+your IP address.
 
-Language prefixes from here: https://en.wikipedia.org/wiki/List_of_Wikipedias
-Trivia: https://www.quora.com/Why-are-there-so-many-articles-in-the-Cebuano-language-on-Wikipedia
+The number of articles that are downloaded are set as a fraction of the total number of Wikipedia
+articles for the given language. The default fraction is 0.00001. For instance, there are 6 million
+articles in English, so: 6000000 * 0.00001 = 60 articles will be downloaded. However, keep in mind
+that some languages like Cebuano are over-represented, so depending on how you intend this app to
+be used, you may want to modify the data distribution by language.
+
+https://www.quora.com/Why-are-there-so-many-articles-in-the-Cebuano-language-on-Wikipedia
 """
 import os
 import re
-import json
 
 import requests
 
 import sys
 sys.path.append("..")
-from languages import LANGUAGES
+from languages import LANGUAGE_STATS
 
 
 class GetWikiArticles(object):
@@ -36,9 +40,14 @@ class GetWikiArticles(object):
         query = f"https://{language_id}.wikipedia.org/w/api.php?format=json&action=query&list=random&rnlimit={str(number_of_articles)}&rnnamespace=0"
 
         # Reads the response into a json object that can be iterated over.
-        data = json.loads(requests.get(query).text)
+        try:
+            data = requests.get(query).json()
 
-        # collects the ids from the json
+        except requests.exceptions.ConnectionError:
+            print("\nYou are requesting too much data! Wikipedia is blocking you. Wait a bit and try again.")
+            sys.exit()
+
+        # Collects the ids from the json.
         ids = [article["id"] for article in data["query"]["random"]]
 
         return ids
@@ -52,7 +61,7 @@ class GetWikiArticles(object):
             idx = str(idx)
             query = f"https://{language_id}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&pageids={idx}&redirects=true"
 
-            data = json.loads(requests.get(query).text)
+            data = requests.get(query).json()
 
             try:
                 title = data["query"]["pages"][idx]["title"]
@@ -95,9 +104,20 @@ class GetWikiArticles(object):
 
 if __name__ == "__main__":
 
-    NUM_ARTICLES = 50
+    # Location the actual articles will be downloaded
     DATA_PATH = "data"
-    article_downloader = GetWikiArticles(DATA_PATH)
 
-    for lang_id in LANGUAGES:
-        article_downloader.write_articles(lang_id, NUM_ARTICLES)
+    # What proportion of all the wiki articles are downloaded.
+    # There are 6 million English articles, so 6000000 * 0.00001 = 60 articles.
+    DATA_FRAC = 0.00001
+
+    article_downloader = GetWikiArticles(DATA_PATH)
+    
+    for language, language_id, num_articles, _ in LANGUAGE_STATS:
+        num_articles_to_download = int(num_articles * DATA_FRAC)
+
+        # Debug
+        print(f"\nDownloading {num_articles_to_download} articles in {language} ", end="")
+
+        # Download articles for the given language.
+        article_downloader.write_articles(language_id, num_articles_to_download)
