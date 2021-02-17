@@ -15,7 +15,7 @@ certifi=2020.12.5=py38hecd8cb5_0
 cffi=1.14.5=py38h2125817_0
 chardet=4.0.0=py38hecd8cb5_1003
 click=7.1.2=pyhd3eb1b0_0
-cryptography=3.3.1=py38hbcfaee0_1
+cryptography=3.3.2=py38hbcfaee0_1
 cycler=0.10.0=py38_0
 decorator=4.4.2=pyhd3eb1b0_0
 defusedxml=0.6.0=pyhd3eb1b0_0
