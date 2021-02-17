@@ -34,3 +34,4 @@ get_data.py -> create_database.py -> generate_model.py -> test_model.py -> api.p
 
 ## How to put this into production
 
+## sqlite to inspect the database
