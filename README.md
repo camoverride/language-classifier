@@ -35,7 +35,7 @@ Generate a SQLite database:
 
 Explore the data:
 `sqlite3 language_data_1.db`
-`> SELECT * FROM train WHERE language = "en" LIMIT 100;`
+`> ###@R@RF#@$F#
 
 Make a model:
 `cd ../modeling && python3 generate_model.py`

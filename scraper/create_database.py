@@ -2,25 +2,18 @@
 This module takes Wikipedia texts and writes them to a SQL database. The database is organized
 by language and by whether an article is in the training or the test set. Inspect the database like:
 
-$ sqlite3 language_data.db
-> .schema
-> SELECT text FROM train WHERE language = "en";
+
 """
-import os
-import subprocess
-import sys
+import glob
+import numpy as np
 
 from sqlalchemy import Table, Column, Text, String, MetaData, create_engine
-
-sys.path.append("..")
-from languages import LANGUAGES
-from get_data import GetWikiArticles
 
 
 class Database(object):
     """
     This creates a SQLite database with two tables, "train" and "test." Each table
-    has data from each language. This object has the public method write_categories,
+    has data from each language. This object has the public method write_data,
     which takes as its arguments a language, a training text, and a test text. It
     writes this information to the proper table.
     """
@@ -31,122 +24,93 @@ class Database(object):
         self.metadata = MetaData()
 
         # Table that contains the training data.
-        self.train = Table("train", self.metadata,
+        self.wiki_data = Table("wiki_data", self.metadata,
                            Column("language", String, primary_key=True),
+                           Column("title", String),
+                           Column("category", String), # train or test sets
                            Column("text", Text)
                           )
-
-        # Table that contains the test data.
-        self.test = Table("test", self.metadata,
-                          Column("language", String, primary_key=True),
-                          Column("text", Text)
-                         )
 
         self.metadata.create_all(self.engine)
 
 
-    def write_categories(self, language, training_text, test_text):
+    def write_data(self, language, text, title, category):
         """
         This method writes the data to the database.
         """
         conn = self.engine.connect()
 
-        # Drop rows, data will be overwritten anyway.
-        del1 = self.train.delete().where(self.train.columns.language == language)
-        del2 = self.test.delete().where(self.test.columns.language == language)
+        # TODO: clean this up
+        del1 = self.wiki_data.delete().where(self.wiki_data.columns.language == language)
 
         conn.execute(del1)
-        conn.execute(del2)
 
-        ins1 = self.train.insert().values(
+        ins = self.train.insert().values(
             language=language,
-            text=training_text
+            title=title,
+            category=category,
+            text=text,
         )
 
-        ins2 = self.test.insert().values(
-            language=language,
-            text=test_text
-        )
-
-        # Execute inserts.
-        conn.execute(ins1)
-        conn.execute(ins2)
-
-
-
-
-
-
-
-class DataBaseWriter(object):
-    """
-    This is an object with the public method dbwrite. This object takes as its argument
-    data_location, which specifies a directory where the language data should be downloaded.
-    """
-    def __init__(self, data_location, sql_database_name):
-        self.data_location = data_location
-        self.sql_database = Database(sql_database_name)
-
-
-    def _get_words_in_language(self, language):
-        """
-        Iterates through all the articles downloaded for a single language, collecting all the words
-        by splitting on whitespace. Returns the list of words.
-        """
-        words = []
-        language_data_folder = f"{self.data_location}/{language}"
-        contents = os.listdir(language_data_folder)
-
-        # Check that only articles are selected, not other stuff.
-        articles = [article for article in contents if article[-3:] == "txt"]
-
-        # Iterate over all the words.
-        for article in articles:
-            with open(f"{language_data_folder}/{article}", "r") as text:
-                for line in text:
-                    for word in line.split(" "):
-                        words.append(word)
-
-        return words
-
-
-    def dbwrite(self, language, words, train_frac):
-        """
-        This function writes the specified amount of data (in words) to the SQLite database. If
-        there are not enough words present, then more are downloaded.
-        """
-        language_data_path = f"{self.data_location}/{language}"
-
-        # Checks if the folder for the specific language exists. Creates it if it doesn't.
-        if language not in os.listdir(self.data_location):
-            os.makedirs(language_data_path, exist_ok=True)
-
-        # If there are not enough words downloaded, download more.
-        while len(self._get_words_in_language(language)) < words:
-            # Debug output.
-            print(f"Downloading more words, not enough: {len(self._count_words_in_language(language))}")
-            article_downloader = GetWikiArticles(self.data_location)
-            article_downloader.write_articles(language, 25)
-
-        # Read all the words into a list, trimming off any extras. Divide into training and test sets.
-        all_words = self._get_words_in_language(language)[:words]
-        split = int(train_frac * words)
-        training_set = all_words[split:]
-        test_set = all_words[:split]
-
-        # Join the words by white-space and add to the SQL database.
-        self.sql_database.write_categories(language, " ".join(training_set), " ".join(test_set))
-
+        # Insert date into the database!
+        conn.execute(ins)
 
 
 if __name__ == "__main__":
-    WORDS_PER_LANGUAGE = 4000
-    DB_VERSION = "1"
-    DB_PATH = f"language_data_{DB_VERSION}.db"
-    DATA_PATH = "data"
+    DATABASE_NAME = "language_data.db"
+    DATA_LOCATION = "data"
     TRAIN_FRAC = 0.9
 
-    writer = DataBaseWriter(data_location=DATA_PATH, sql_database_name=DB_PATH)
+    db = Database(DATABASE_NAME)
 
-    for lang in LANGUAGES:
-        writer.dbwrite(lang, WORDS_PER_LANGUAGE, TRAIN_FRAC)
+    file_paths = glob.glob(".data/**/*.txt", recursive=True)
+
+    for f in file_paths:
+        # Get the language id from the path.
+        language = f.split("/")[-2]
+
+        # Get the text of the document.
+        with open(f) as t:
+            text = t.read()
+
+        # Get the title from the path.
+        title = f.split(".")[-2]
+
+        # Randomly assign to the training or test set.
+        np.random.binomial(1, TRAIN_FRAC)
+
+        db.write_data(language, text, title, category)
+
+
+
+# class DataBaseWriter(object):
+#     """
+#     This is an object with the public method dbwrite. This object takes as its argument
+#     data_location, which specifies a directory where the language data should be downloaded.
+#     """
+#     def __init__(self, data_location, sql_database_name):
+#         self.data_location = data_location
+#         self.sql_database = Database(sql_database_name)
+
+
+#     def dbwrite(self, language, train_frac):
+#         """
+#         This function writes to the SQLite database.
+#         """
+#         language_data_path = f"{self.data_location}/{language}"
+
+#         # Join the words by white-space and add to the SQL database.
+#         self.sql_database.write_data(language, title, category, text)
+
+
+
+# if __name__ == "__main__":
+#     DB_VERSION = "1"
+#     DB_PATH = f"language_data_{DB_VERSION}.db"
+#     DATA_PATH = "data"
+#     TRAIN_FRAC = 0.9
+
+#     writer = DataBaseWriter(data_location=DATA_PATH, sql_database_name=DB_PATH)
+
+#     for lang in LANGUAGES:
+#         writer.dbwrite(lang, TRAIN_FRAC)
