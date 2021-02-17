@@ -7,7 +7,7 @@ curl http://127.0.0.1:5001//identify -d "data=Le commerce n'est pas un monstre e
 
 from flask import Flask, request
 from flask_restful import Resource, Api
-from classify_language import identify
+from classify_language import model
 
 
 app = Flask(__name__)
@@ -17,7 +17,9 @@ api = Api(app)
 # This is our API class. This accepts text data and returns the language abbreviation.
 class LanguageIdentifier(Resource):
     def get(self):
-        return {"language": identify(request.form["data"])}
+        # The final [0] prevents the user from sending a large list of requests.
+        response = model.classify([request.form["data"]])[0]
+        return {"language": response}
 
 api.add_resource(LanguageIdentifier, "/identify")
 
