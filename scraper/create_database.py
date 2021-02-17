@@ -11,7 +11,7 @@ from os import listdir
 from os.path import join
 from get_data import GetArticles, Database
 import sys
-sys.path.append('..')
+sys.path.append("..")
 from languages import LANGUAGES
 
 

@@ -25,18 +25,13 @@ class GetArticles(object):
         as opposed to user-talk pages or category pages. These ids are used by the _get_article_text
         function to request articles.
         """
-        query = \
-                        'https://' + language_id \
-                        + '.wikipedia.org/w/api.php?format=json&action=query&list=random&rnlimit=' \
-                        + str(number_of_articles) + '&rnnamespace=0'
+        query = f"https://{language_id}.wikipedia.org/w/api.php?format=json&action=query&list=random&rnlimit={str(number_of_articles)}&rnnamespace=0"
 
-        # reads the response into a json object that can be iterated over
+        # Reads the response into a json object that can be iterated over.
         data = json.loads(requests.get(query).text)
 
         # collects the ids from the json
-        ids = []
-        for article in data['query']['random']:
-            ids.append(article['id'])
+        ids = [article["id"] for article in data["query"]["random"]]
 
         return ids
 
@@ -47,16 +42,13 @@ class GetArticles(object):
         """
         for idx in article_id_list:
             idx = str(idx)
-            query = \
-                            'https://' + language_id \
-                            + '.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&pageids=' \
-                            + idx + '&redirects=true'
+            query = f"https://{language_id}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&pageids={idx}&redirects=true"
 
             data = json.loads(requests.get(query).text)
 
             try:
-                title = data['query']['pages'][idx]['title']
-                text_body = data['query']['pages'][idx]['extract']
+                title = data["query"]["pages"][idx]["title"]
+                text_body = data["query"]["pages"][idx]["extract"]
             except KeyError as error:
                 # if nothing is returned for the request, skip to the next item
                 # if it is important to download a precise number of files
@@ -88,6 +80,21 @@ class GetArticles(object):
             title = "".join(x for x in title if x.isalnum())
             with open(db_location + '/' + title + '.txt', 'w+') as wikipedia_file:
                 wikipedia_file.write(text)
+
+
+
+if __name__ == "__main__":
+    pass
+
+
+
+
+
+
+
+
+
+
 
 
 
