@@ -1,47 +1,85 @@
 # language-classifier
 
-See [the website](https://camtsmith.com/articles/2017-10/naive-bayes-text-classification) for a tutorial.
+[See a demo in production!](https://language-identifier-app.herokuapp.com/)
+
+See [the website](https://camtsmith.com/articles/2021-02/how-to-build-ml-app-from-scratch) for a tutorial.
+
+This repo is an example of how to build a machine learning application from scratch! This is a simple web application that uses the [Naive Bayes](https://en.wikipedia.org/wiki/Naive_Bayes_classifier#Multinomial_na%C3%AFve_Bayes) algorithm to classify a string of text as belonging to one of several languages.
+
+This application has a front-end built in Flask, a model server created with flask_restful, and a database in SQLite. Data is downloaded from Wikipedia.
 
 ## Install
 
 Install dependencies with conda:
-`conda create --name language_classifier python=3.8`
-`conda activate language_classifier`
-`conda install --file requirements.txt`
+
+~~~shell
+conda create --name language_classifier python=3.8
+conda activate language_classifier
+conda install --file requirements.txt
+~~~
 
 
 ## Run the app locally
 
 Run the web application:
-`python3 app.py`
+
+~~~shell
+python3 app.py
+~~~
 
 View the application:
-`http://127.0.0.1:5000`
+
+~~~shell
+http://127.0.0.1:5000
+~~~
 
 Run the model API:
-`python3 api.py`
+
+~~~shell
+python3 api.py
+~~~
 
 Test out the API:
-`curl http://127.0.0.1:5001//identify -d "data=Le commerce n'est pas un monstre et la publicité" -X GET`
+
+~~~shell
+curl http://127.0.0.1:5001//identify -d "data=Le commerce n'est pas un monstre et la publicité" -X GET
+~~~
 
 
 ## The data pipeline
 
 Download some data from Wikipedia:
-`cd scraper && python3 get_data.py`
+
+~~~shell
+cd scraper && python3 get_data.py
+~~~
 
 Generate a SQLite database:
-`create_database.py`
+
+~~~shell
+create_database.py
+~~~
 
 Explore the data:
-`sqlite3 language_data.db`
-`> SELECT language, title FROM wiki_data LIMIT 25;`
 
-Make a model:
-`cd ../modeling && python3 generate_model.py`
+~~~shell
+$ sqlite3 language_data.db
+> SELECT language, title FROM wiki_data LIMIT 25;
+~~~
 
-Test the model:
-`python3 test_model.py`
+Make and test model (run all cells in this notebook):
+
+~~~shell
+cd ../modeling
+jupyter lab create_model.ipynb
+~~~
+
+Deploy the model by editing the following lines in `classify_language.py`:
+
+~~~shell
+MODEL_NAME = "NB_classif"
+MODEL_VERSION = "1"
+~~~
 
 
 ## How to put this into production

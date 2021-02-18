@@ -7,11 +7,7 @@
 </div>
 
 {{ wtf.quick_form(form) }}
-<p>Supported languages are: <i>en, sv, de, fr, nl, ru, it, es, pl, vi, pt, uk, fa, sco</i></p>
+<p>Supported languages are: <i>English, Cebuano, Swedish, German, French, Dutch, Russian, Italian, Spanish, Polish, Vietnamese, Japanese, Egyptian Arabic, Chinese</i></p>
 <p><b>The Phrase is: </b><i>{% if phrase %}{{ phrase }}{% else %}____{% endif %}</i></p>
 <p><b>The Language is: </b><i>{% if language %}{{ language }}{% else %}____{% endif %}</i></p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<h4>API</h4>
-<p><i>curl https://language-classifier-app.herokuapp.com/identify -d "data=Le commerce n'est pas un monstre et la publicité" -X GET</i></p>
 {% endblock %}
