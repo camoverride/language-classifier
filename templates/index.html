@@ -10,4 +10,7 @@
 <p>Supported languages are: <i>English, Cebuano, Swedish, German, French, Dutch, Russian, Italian, Spanish, Polish, Vietnamese, Japanese, Egyptian Arabic, Chinese</i></p>
 <p><b>The Phrase is: </b><i>{% if phrase %}{{ phrase }}{% else %}____{% endif %}</i></p>
 <p><b>The Language is: </b><i>{% if language %}{{ language }}{% else %}____{% endif %}</i></p>
+&nbsp;
+<p>Test out the API:</p>
+<p><code>curl https://language-identifier-app.herokuapp.com/identify -d "data=Le commerce n'est pas un monstre et la publicité" -X GET</code></p>
 {% endblock %}
