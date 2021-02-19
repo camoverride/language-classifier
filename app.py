@@ -3,27 +3,35 @@ This is a flask server. This renders a web page and handles user requests. When 
 enters a phrase, this server sends a request to the identify api server, which returns
 the identity of the language. This is then rendered on the webpage.
 
-This server is set to run on port 5000, whereas the API server is set to run on port 5001.
+Test the API:
+    curl http://127.0.0.1:5000//identify -d "data=Le commerce n'est pas un monstre et la publicité" -X GET
 """
-
-from flask import Flask, render_template
+from flask import Flask, request, render_template
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
+from flask_restful import Resource, Api
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 import requests
-# Remove this line if running independent model and HTML servers
 from classify_language import model
 
 
 app = Flask(__name__)
+api = Api(app)
 app.config["SECRET_KEY"] = "SECRET_KEY"
 
 # Pretty CSS and HTML for website.
 bootstrap = Bootstrap(app)
 
-# This is the address of the model API. It may be different on your machine.
-API_ROUTE = "http://127.0.0.1:5001/"
+# This is our API class. This accepts text data and returns the language abbreviation.
+class LanguageIdentifier(Resource):
+    def get(self):
+        # The final [0] prevents the user from sending a large list of requests.
+        response = model.classify([request.form["data"]])[0]
+        return {"language": response}
+
+api.add_resource(LanguageIdentifier, "/identify")
+
 
 # This is a form where users will type/paste snippets of the language they want to identify.
 class LanguageForm(FlaskForm):
@@ -38,9 +46,7 @@ def index():
     form = LanguageForm()
     if form.validate_on_submit():
         phrase = form.language.data
-        # Replace this line with the below line if running independent model and HTML servers
         response = model.classify([phrase])[0]
-        # response = requests.get(f"{API_ROUTE}/identify", data = {"data": phrase}).json()["language"]
         form.language.data = ""
     return render_template("index.html", form=form, phrase=phrase, language=response)
 
