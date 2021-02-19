@@ -2,6 +2,12 @@
 
 [See a demo in production!](https://language-identifier-app.herokuapp.com/)
 
+Test out the API:
+
+~~~shell
+curl https://language-identifier-app.herokuapp.com/identify -d "data=Le commerce n'est pas un monstre et la publicité" -X GET
+~~~
+
 See [the website](https://camtsmith.com/articles/2021-02/how-to-build-ml-app-from-scratch) for a tutorial.
 
 This repo is an example of how to build a machine learning application from scratch! This is a simple web application that uses the [Naive Bayes](https://en.wikipedia.org/wiki/Naive_Bayes_classifier#Multinomial_na%C3%AFve_Bayes) algorithm to classify a string of text as belonging to one of several languages.
