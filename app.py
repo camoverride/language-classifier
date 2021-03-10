@@ -13,6 +13,7 @@ from flask_restful import Resource, Api
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 import requests
+
 from classify_language import model
 
 
