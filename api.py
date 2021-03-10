@@ -16,13 +16,16 @@ api = Api(app)
 
 # This is our API class. This accepts text data and returns the language abbreviation.
 class LanguageIdentifier(Resource):
+    def __init__(self):
+        self.model = model
+
     def get(self):
         # The final [0] prevents the user from sending a large list of requests.
-        response = model.classify([request.form["data"]])[0]
+        response = self.model.classify([request.form["data"]])[0]
         return {"language": response}
-
-api.add_resource(LanguageIdentifier, "/identify")
 
 
 if __name__ == "__main__":
+    api.add_resource(LanguageIdentifier, "/identify")
+
     app.run(host="127.0.0.1", port=5001, debug=True)

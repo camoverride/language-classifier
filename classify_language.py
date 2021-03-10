@@ -11,7 +11,6 @@ MODEL_NAME = "NB_classif"
 MODEL_VERSION = "1"
 MODEL_PATH = f"modeling/models/{MODEL_NAME}/{MODEL_VERSION}"
 
-
 # Load the model components.
 classifier = joblib.load(f"{MODEL_PATH}/classifier.pkl")
 tfidf_transformer = joblib.load(f"{MODEL_PATH}/tfidf_transformer.pkl")
