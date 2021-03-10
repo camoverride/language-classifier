@@ -4,55 +4,55 @@ by language and by whether an article is in the training or the test set. Inspec
 
 $ sqlite3 language_data.db
 > SELECT language, title FROM wiki_data WHERE language = "en";
+
+This does NOT append to an existing database: it creates a new one from scratch.
 """
 import glob
 import numpy as np
-
-from sqlalchemy import Table, Column, Text, String, MetaData, create_engine
+import sqlite3
 
 
 class Database(object):
     """
-    This creates a SQLite database with the columns title, language, and text, which
+    This creates a SQLite database with the columns title, language, and text_data, which
     are all the values we'll need to train some ML algorithms!
     """
 
     def __init__(self, database_name):
-        # This can easily be exchanged for a different database, like postgres.
-        self.engine = create_engine(f"sqlite:///{database_name}.db")
-        self.metadata = MetaData()
+        self.database_name = database_name
 
-        # Table that contains the training data.
-        self.wiki_data = Table("wiki_data", self.metadata,
-                           Column("title", String, primary_key=True),
-                           Column("language", String),
-                           Column("text", Text)
-                          )
+        # Connect to the database.
+        self.conn = sqlite3.connect(f"{self.database_name}.db")
+        self.c = self.conn.cursor()
 
-        self.metadata.create_all(self.engine)
+        # Create a table.
+        self.c.execute("""CREATE TABLE wiki_data
+                     (title text primary key, language text, text_data text)""")
+
+        # Commit the changes and clean up.
+        self.conn.commit()
+        self.conn.close()
 
 
-    def write_data(self, language, text, title):
+    def write_data(self, language, text_data, title):
         """
         This method writes the data to the database.
         """
-        conn = self.engine.connect()
+        # Connect to the database.
+        self.conn = sqlite3.connect(f"{self.database_name}.db")
+        self.c = self.conn.cursor()
 
-        ins = self.wiki_data.insert().values(
-            language=language,
-            title=title,
-            text=text,
-        )
+        self.c.execute(f"""INSERT INTO wiki_data VALUES ('{title}', '{language}', '{text_data}')""")
 
-        # Insert date into the database!
-        conn.execute(ins)
+        # Commit the changes and clean up.
+        self.conn.commit()
+        self.conn.close()
 
 
 if __name__ == "__main__":
 
     DATABASE_NAME = "language_data"
     DATA_LOCATION = "data"
-    TRAIN_FRAC = 0.9
 
     # Get all the file paths from the data directory
     file_paths = glob.glob(f"./{DATA_LOCATION}/**/*.txt", recursive=True)

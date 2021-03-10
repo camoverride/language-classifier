@@ -80,7 +80,6 @@ ipykernel
 ipython
 ipython-genutils
 pandas
-SQLAlchemy
 packaging
 scikit-learn
 scipy
