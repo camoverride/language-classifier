@@ -15,6 +15,7 @@ from wtforms.validators import DataRequired
 import requests
 
 from classify_language import model
+from languages import mapping
 
 
 app = Flask(__name__)
@@ -29,7 +30,7 @@ class LanguageIdentifier(Resource):
     def get(self):
         # The final [0] prevents the user from sending a large list of requests.
         response = model.classify([request.form["data"]])[0]
-        return {"language": response}
+        return {"language": mapping[response]}
 
 api.add_resource(LanguageIdentifier, "/identify")
 
@@ -49,7 +50,7 @@ def index():
         phrase = form.language.data
         response = model.classify([phrase])[0]
         form.language.data = ""
-    return render_template("index.html", form=form, phrase=phrase, language=response)
+    return render_template("index.html", form=form, phrase=phrase, language=mapping[response])
 
 
 if __name__ == "__main__":

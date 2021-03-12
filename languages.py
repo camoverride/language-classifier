@@ -24,3 +24,6 @@ LANGUAGE_STATS = [ \
     ]
 
 LANGUAGES = [language for (language, _, _, _) in LANGUAGE_STATS]
+
+# Map the language code to the name i.e. {"en": "English", ...}
+mapping = {k: v for v, k, _, _ in LANGUAGE_STATS}
