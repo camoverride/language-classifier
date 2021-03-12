@@ -14,6 +14,7 @@ This repo is an example of how to build a machine learning application from scra
 
 This application has a front-end built in Flask, a model server created with flask_restful, and a database in SQLite. Data is downloaded from Wikipedia.
 
+
 ## Install
 
 Install dependencies with conda:
@@ -21,7 +22,7 @@ Install dependencies with conda:
 ~~~shell
 conda create --name language_classifier python=3.8
 conda activate language_classifier
-conda install --file requirements.txt
+pip install -r requirements.txt
 ~~~
 
 
@@ -30,7 +31,14 @@ conda install --file requirements.txt
 Run the web application:
 
 ~~~shell
-python3 app.py
+export FLASK_APP=app.py
+flask run
+~~~
+
+Or:
+
+~~~shell
+python app.py
 ~~~
 
 View the application:
@@ -42,7 +50,7 @@ http://127.0.0.1:5000
 Run the model API:
 
 ~~~shell
-python3 api.py
+python api.py
 ~~~
 
 Test out the API:
@@ -57,7 +65,7 @@ curl http://127.0.0.1:5001//identify -d "data=Le commerce n'est pas un monstre e
 Download some data from Wikipedia:
 
 ~~~shell
-cd scraper && python3 get_data.py
+cd scraper && python get_data.py
 ~~~
 
 Generate a SQLite database:
