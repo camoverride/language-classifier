@@ -16,7 +16,7 @@ decorator==4.4.2
 defusedxml==0.7.1
 dominate==2.6.0
 entrypoints==0.3
-Flask==1.1.2
+Flask==2.3.2
 Flask-Bootstrap==3.3.7.1
 Flask-RESTful==0.3.8
 Flask-WTF==0.14.3
